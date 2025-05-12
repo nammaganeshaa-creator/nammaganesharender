@@ -1,0 +1,43 @@
+# Node.js dependencies
+/node_modules
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Environment variables
+.env
+
+# Optional npm cache directory
+.npm
+
+# MacOS Finder
+.DS_Store
+
+# VSCode settings
+.vscode/
+
+# Build output
+/dist
+/build
+
+# Dependency directories
+/coverage
+
+# Temporary files
+*.tmp
+*.swp
+
+# System files
+Thumbs.db
+ehthumbs.db
+
+# Docker files
+.docker/
+
+# Docker Compose override
+docker-compose.override.yml
+
+# Nginx logs (if using Nginx)
+*.log
