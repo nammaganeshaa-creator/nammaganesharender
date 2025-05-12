@@ -4,6 +4,7 @@ const connectDB = require("./config/db");
 const User = require("./model/userModel");
 const Post = require("./model/postModel");
 const bcrypt = require("bcrypt");
+const mongoose = require("mongoose");
 
 dotenv.config();
 
