@@ -68,6 +68,7 @@ app.post("/login", async (req, res) => {
     }
 
     const { password: _, ...userData } = user.toObject();
+    console.log(userData);
     res.status(200).json(userData);
   } catch (err) {
     res.status(500).json({ error: "Server error" });
