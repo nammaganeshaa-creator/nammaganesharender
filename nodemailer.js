@@ -16,7 +16,7 @@ const sendEmail = async (name, phone, flat, tower, pooja, date) => {
     to: "nammaganeshaa@gmail.com",
     subject: "New Pooja Request",
     text: `Pooja Request Details:
-Customer Name: ${name}
+Devotee Name: ${name}
 Phone Number: ${phone}
 Date of Pooja: ${date}
 Flat Number: ${flat}
@@ -29,10 +29,10 @@ Please confirm your availability for the mentioned date.`,
         <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
           <h2 style="text-align: center; color: #d35400;">New Pooja Request</h2>
           <p style="font-size: 16px;">Hello Priest <span style="font-size: 20px;">🙏</span> Namastey,</p>
-          <p style="font-size: 16px;">One of our customers has requested a priest for their upcoming pooja. Below are the details:</p>
+          <p style="font-size: 16px;">One of our devotee has requested a priest for their upcoming pooja. Below are the details:</p>
           <table style="width: 100%; font-size: 16px; border-collapse: collapse; margin-top: 20px;">
             <tr>
-              <td style="padding: 10px; font-weight: bold; color: #555;">Customer Name:</td>
+              <td style="padding: 10px; font-weight: bold; color: #555;">Devotee Name:</td>
               <td style="padding: 10px;">${name}</td>
             </tr>
             <tr>
