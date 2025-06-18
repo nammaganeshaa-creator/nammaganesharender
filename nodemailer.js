@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendEmail = async ( name, phone, flat, tower, pooja, date) => {
-  const receipientEmail = process.env.To_MAIL;
+  
   console.log("Recipient Email:", receipientEmail);
   if (!receipientEmail) {
     console.error("Missing recipient email. Please check .env file (To_MAIL).");
