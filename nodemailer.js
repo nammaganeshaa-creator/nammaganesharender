@@ -19,7 +19,7 @@ const sendEmail = async ( name, phone, flat, tower, pooja, date) => {
   }
   const mailOptions = {
     from: "nammaganeshaa@gmail.com",
-    to: receipientEmail,
+    to: "nammaganeshaa@gmail.com",
     subject: "New Pooja Request",
     text: `Pooja Request Details:
 Name: ${name}
