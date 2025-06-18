@@ -3,8 +3,10 @@ const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const User = require("./model/userModel");
 const Post = require("./model/postModel");
+const Request = require("./model/requestModel");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
+const sendEmail = require("./nodemailer");
 
 dotenv.config();
 
@@ -68,7 +70,7 @@ app.post("/login", async (req, res) => {
     }
 
     const { password: _, ...userData } = user.toObject();
-    console.log(userData);
+    
     res.status(200).json(userData);
   } catch (err) {
     res.status(500).json({ error: "Server error" });
@@ -139,6 +141,34 @@ app.get("/posts/:userId", async (req, res) => {
     res.status(200).json(posts);
   } catch (err) {
     res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.post("/request", async (req, res) => {
+  const { name, phone, flat, tower, date, poojaName,userId } = req.body;
+  try {
+    if (!name) return res.status(400).json({ error: "Name is required" });
+    if (!phone) return res.status(400).json({ error: "Phone is required" });
+    if (!flat) return res.status(400).json({ error: "Flat is required" });
+    if (!tower) return res.status(400).json({ error: "Tower is required" });
+    if (!date) return res.status(400).json({ error: "Date is required" });
+    if (!poojaName) return res.status(400).json({ error: "Pooja name is required" });
+    const newRequest = new Request({
+      name,
+      phone,
+      tower,
+      flat,
+      date,
+      poojaName,
+      userId
+    });
+
+    const savedRequest = await newRequest.save();
+
+    await sendEmail(name, phone, flat, tower, poojaName, date);
+    res.status(201).send(savedRequest);
+  } catch (err) {
+    res.status(500).send(`Server error: ${err}`);
   }
 });
 
