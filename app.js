@@ -7,10 +7,26 @@ const Request = require("./model/requestModel");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const sendEmail = require("./nodemailer");
+const cron = require("node-cron");
 
 dotenv.config();
 
 connectDB();
+
+cron.schedule("*/1 * * * *", async () => {
+      const url = "https://quantumb.onrender.com/ping"; // or /api/ping based on your route
+      console.log(`[CRON] Self-ping at ${new Date().toLocaleTimeString()}`);
+
+      try {
+        const response = await fetch(url);
+        if (response.ok) {
+          console.log("✅ Self-ping successful.");
+        } else {
+          console.error("⚠ Self-ping failed with status:", response.status);
+        }
+      } catch (error) {
+        console.error("❌ Self-ping error:", error.message);
+}});
 
 const app = express();
 app.use(express.json());
