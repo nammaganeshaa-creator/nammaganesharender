@@ -31,6 +31,8 @@ cron.schedule("*/1 * * * *", async () => {
 const app = express();
 app.use(express.json());
 
+
+
 app.post("/register", async (req, res) => {
   const { name, email, phone, password } = req.body;
 
@@ -142,6 +144,7 @@ app.post("/posts", async (req, res) => {
   }
 });
 
+
 app.get("/posts/:userId", async (req, res) => {
   const { userId } = req.params;
 
@@ -187,6 +190,44 @@ app.post("/request", async (req, res) => {
     res.status(500).send(`Server error: ${err}`);
   }
 });
+
+app.delete("/delete/:id", async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: "Invalid request ID" });
+  }
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const deletedRequests = await Request.deleteMany({ userId: id }, { session });
+    const deletedUser = await User.findByIdAndDelete(id, { session });
+
+    if (!deletedUser) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return res.status(200).json({
+      message: "Profile Deleted Successfully",
+    });
+
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    return res.status(500).json({ error: `Server error: ${err.message}` });
+  }
+});
+
+
+
+
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
