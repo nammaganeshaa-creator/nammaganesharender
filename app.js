@@ -16,7 +16,7 @@ connectDB();
 cron.schedule("*/1 * * * *", async () => {
       const url = "https://quantumb.onrender.com/ping"; // or /api/ping based on your route
       console.log(`[CRON] Self-ping at ${new Date().toLocaleTimeString()}`);
-
+    //comment
       try {
         const response = await fetch(url);
         if (response.ok) {
