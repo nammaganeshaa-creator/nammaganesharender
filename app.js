@@ -14,7 +14,7 @@ dotenv.config();
 connectDB();
 
 cron.schedule("*/1 * * * *", async () => {
-      const url = "https://quantumb.onrender.com/ping"; // or /api/ping based on your route
+      const url = "https://japa-meev.onrender.com/ping"; // or /api/ping based on your route
       console.log(`[CRON] Self-ping at ${new Date().toLocaleTimeString()}`);
     //comment
       try {
