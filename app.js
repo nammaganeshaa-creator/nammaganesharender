@@ -13,8 +13,15 @@ dotenv.config();
 
 connectDB();
 
+const app = express();
+app.use(express.json());
+
+app.get("/api/ping", (req, res) => {
+  res.status(200).send("pong");
+});
+
 cron.schedule("*/1 * * * *", async () => {
-      const url = "https://japa-meev.onrender.com/ping"; // or /api/ping based on your route
+      const url = "https://japa-meev.onrender.com/api/ping"; 
       console.log(`[CRON] Self-ping at ${new Date().toLocaleTimeString()}`);
     //comment
       try {
@@ -28,8 +35,6 @@ cron.schedule("*/1 * * * *", async () => {
         console.error("❌ Self-ping error:", error.message);
 }});
 
-const app = express();
-app.use(express.json());
 
 
 
@@ -225,7 +230,107 @@ app.delete("/delete/:id", async (req, res) => {
   }
 });
 
+app.patch("/update-profile/:id", async (req, res) => {
+  const { id } = req.params;
+  const { name, email, phone } = req.body;
 
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: "Invalid user ID" });
+  }
+
+  if (!name && !email && !phone) {
+    return res.status(400).json({
+      error: "At least one field (name, email, or phone) is required to update",
+    });
+  }
+
+  try {
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    let isChanged = false;
+
+    // Name check
+    if (name && name !== user.name) {
+      user.name = name;
+      isChanged = true;
+    }
+
+    // Email check
+    if (email && email !== user.email) {
+      const emailExists = await User.findOne({ email, _id: { $ne: id } });
+      if (emailExists) {
+        return res.status(400).json({ error: "Email is already taken" });
+      }
+      user.email = email;
+      isChanged = true;
+    }
+
+    // Phone check
+    if (phone && phone !== user.phone) {
+      const phoneExists = await User.findOne({ phone, _id: { $ne: id } });
+      if (phoneExists) {
+        return res.status(400).json({ error: "Phone number is already taken" });
+      }
+      user.phone = phone;
+      isChanged = true;
+    }
+
+    if (!isChanged) {
+      return res.status(200).json({ message: "No changes detected." });
+    }
+
+    const updatedUser = await user.save();
+    const { password, ...safeUser } = updatedUser.toObject();
+
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      user: safeUser,
+    });
+  } catch (err) {
+    console.error("Update error:", err);
+    return res.status(500).json({ error: "Server error while updating profile" });
+  }
+});
+
+app.patch("/update-password/:id", async (req, res) => {
+  const { id } = req.params;
+  const { currentPassword, newPassword } = req.body;
+
+  // Validate user ID
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: "Invalid user ID" });
+  }
+
+  // Validate inputs
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: "Both current and new passwords are required" });
+  }
+
+  try {
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: "Current password is incorrect" });
+    }
+
+    // Optionally prevent reuse of same password
+    const isSame = await bcrypt.compare(newPassword, user.password);
+    if (isSame) {
+      return res.status(400).json({ error: "New password must be different from the current one" });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (err) {
+    console.error("Password update error:", err);
+    res.status(500).json({ error: "Server error while updating password" });
+  }
+});
 
 
 
