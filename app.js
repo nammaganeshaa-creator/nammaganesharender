@@ -316,12 +316,6 @@ app.patch("/update-password/:id", async (req, res) => {
       return res.status(401).json({ error: "Current password is incorrect" });
     }
 
-    // Optionally prevent reuse of same password
-    const isSame = await bcrypt.compare(newPassword, user.password);
-    if (isSame) {
-      return res.status(400).json({ error: "New password must be different from the current one" });
-    }
-
     user.password = newPassword;
     await user.save();
 
