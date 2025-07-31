@@ -232,15 +232,15 @@ app.delete("/delete/:id", async (req, res) => {
 
 app.patch("/update-profile/:id", async (req, res) => {
   const { id } = req.params;
-  const { name, email, phone } = req.body;
+  const { name, email, phone, tower, flat } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ error: "Invalid user ID" });
   }
 
-  if (!name && !email && !phone) {
+  if (!name && !email && !phone && !tower && !flat) {
     return res.status(400).json({
-      error: "At least one field (name, email, or phone) is required to update",
+      error: "At least one field (name, email, phone, tower, or flat) is required to update",
     });
   }
 
@@ -250,13 +250,13 @@ app.patch("/update-profile/:id", async (req, res) => {
 
     let isChanged = false;
 
-    // Name check
+    // Name
     if (name && name !== user.name) {
       user.name = name;
       isChanged = true;
     }
 
-    // Email check
+    // Email
     if (email && email !== user.email) {
       const emailExists = await User.findOne({ email, _id: { $ne: id } });
       if (emailExists) {
@@ -266,13 +266,25 @@ app.patch("/update-profile/:id", async (req, res) => {
       isChanged = true;
     }
 
-    // Phone check
+    // Phone
     if (phone && phone !== user.phone) {
       const phoneExists = await User.findOne({ phone, _id: { $ne: id } });
       if (phoneExists) {
         return res.status(400).json({ error: "Phone number is already taken" });
       }
       user.phone = phone;
+      isChanged = true;
+    }
+
+    // Tower
+    if (tower && tower !== user.tower) {
+      user.tower = tower;
+      isChanged = true;
+    }
+
+    // Flat
+    if (flat && flat !== user.flat) {
+      user.flat = flat;
       isChanged = true;
     }
 
@@ -292,6 +304,28 @@ app.patch("/update-profile/:id", async (req, res) => {
     return res.status(500).json({ error: "Server error while updating profile" });
   }
 });
+
+app.get("/user-profile/:id", async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: "Invalid user ID" });
+  }
+
+  try {
+    const user = await User.findById(id).select("-password"); // exclude password
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json(user);
+  } catch (err) {
+    console.error("Profile fetch error:", err);
+    res.status(500).json({ error: "Server error while fetching user profile" });
+  }
+});
+
+
 
 app.patch("/update-password/:id", async (req, res) => {
   const { id } = req.params;
