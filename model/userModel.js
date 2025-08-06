@@ -8,6 +8,8 @@ const userSchema = new mongoose.Schema({
   password: { type: String },
   tower: { type: String },
   flat:{ type: String },
+  nakshatra: { type: String }, 
+  gotra: { type: String },
 });
 
 userSchema.pre("save", async function (next) {

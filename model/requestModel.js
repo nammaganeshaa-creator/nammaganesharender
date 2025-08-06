@@ -13,8 +13,11 @@ const RequestSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    nakshatra: { type: String }, 
+    gotra: { type: String },     
   },
   { timestamps: true }
 );
 
 module.exports = mongoose.model("Request", RequestSchema);
+

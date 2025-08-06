@@ -169,14 +169,20 @@ app.get("/posts/:userId", async (req, res) => {
 });
 
 app.post("/request", async (req, res) => {
-  const { name, phone, flat, tower, date, poojaName,userId } = req.body;
+  const { name, phone, flat, tower, date, poojaName, userId, nakshatra, gotra } = req.body;
+
   try {
+    // Validate required fields
     if (!name) return res.status(400).json({ error: "Name is required" });
     if (!phone) return res.status(400).json({ error: "Phone is required" });
     if (!flat) return res.status(400).json({ error: "Flat is required" });
     if (!tower) return res.status(400).json({ error: "Tower is required" });
     if (!date) return res.status(400).json({ error: "Date is required" });
     if (!poojaName) return res.status(400).json({ error: "Pooja name is required" });
+    if (!nakshatra) return res.status(400).json({ error: "Nakshatra is required" });
+    if (!gotra) return res.status(400).json({ error: "Gotra is required" });
+
+    // Create new request document
     const newRequest = new Request({
       name,
       phone,
@@ -184,17 +190,24 @@ app.post("/request", async (req, res) => {
       flat,
       date,
       poojaName,
-      userId
+      userId,
+      nakshatra,   
+      gotra,       
     });
 
+    // Save the request
     const savedRequest = await newRequest.save();
 
+    // Optionally send an email
     await sendEmail(name, phone, flat, tower, poojaName, date);
+
+    // Return the saved request
     res.status(201).send(savedRequest);
   } catch (err) {
     res.status(500).send(`Server error: ${err}`);
   }
 });
+
 
 app.delete("/delete/:id", async (req, res) => {
   const { id } = req.params;
@@ -232,15 +245,16 @@ app.delete("/delete/:id", async (req, res) => {
 
 app.patch("/update-profile/:id", async (req, res) => {
   const { id } = req.params;
-  const { name, email, phone, tower, flat } = req.body;
+  const { name, email, phone, tower, flat, nakshatra, gotra } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ error: "Invalid user ID" });
   }
 
-  if (!name && !email && !phone && !tower && !flat) {
+  // Ensure at least one field is provided for update
+  if (!name && !email && !phone && !tower && !flat && !nakshatra && !gotra) {
     return res.status(400).json({
-      error: "At least one field (name, email, phone, tower, or flat) is required to update",
+      error: "At least one field (name, email, phone, tower, flat, nakshatra, gotra) is required to update",
     });
   }
 
@@ -288,6 +302,18 @@ app.patch("/update-profile/:id", async (req, res) => {
       isChanged = true;
     }
 
+    // Nakshatra
+    if (nakshatra && nakshatra !== user.nakshatra) {
+      user.nakshatra = nakshatra;
+      isChanged = true;
+    }
+
+    // Gotra
+    if (gotra && gotra !== user.gotra) {
+      user.gotra = gotra;
+      isChanged = true;
+    }
+
     if (!isChanged) {
       return res.status(200).json({ message: "No changes detected." });
     }
@@ -295,9 +321,14 @@ app.patch("/update-profile/:id", async (req, res) => {
     const updatedUser = await user.save();
     const { password, ...safeUser } = updatedUser.toObject();
 
+    // Include nakshatra and gotra in the response as part of safeUser
     return res.status(200).json({
       message: "Profile updated successfully",
-      user: safeUser,
+      user: {
+        ...safeUser,  // Spread the other user fields
+        nakshatra: updatedUser.nakshatra,  // Include Nakshatra
+        gotra: updatedUser.gotra           // Include Gotra
+      },
     });
   } catch (err) {
     console.error("Update error:", err);
@@ -305,25 +336,41 @@ app.patch("/update-profile/:id", async (req, res) => {
   }
 });
 
+
+
 app.get("/user-profile/:id", async (req, res) => {
   const { id } = req.params;
 
+  // Check if the provided ID is valid
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ error: "Invalid user ID" });
   }
 
   try {
-    const user = await User.findById(id).select("-password"); // exclude password
+    // Fetch the user by ID and exclude the password field
+    const user = await User.findById(id);  // Don't use select here for better control
+
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    res.status(200).json(user);
+    // Return the user profile with Nakshatra and Gotra
+    res.status(200).json({
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      tower: user.tower,
+      flat: user.flat,
+      nakshatra: user.nakshatra,  // Include Nakshatra
+      gotra: user.gotra           // Include Gotra
+    });
   } catch (err) {
     console.error("Profile fetch error:", err);
     res.status(500).json({ error: "Server error while fetching user profile" });
   }
 });
+
+
 
 
 
