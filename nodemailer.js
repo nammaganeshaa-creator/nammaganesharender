@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const sendEmail = async (name, phone, flat, tower, pooja, date) => {
+const sendEmail = async (name, phone, flat, tower, pooja, date, nakshatra, gotra) => {
   const mailOptions = {
     from: "nammaganeshaa@gmail.com",
     to: "nammaganeshaa@gmail.com",
@@ -21,6 +21,8 @@ Phone Number: ${phone}
 Date of Pooja: ${date}
 Flat Number: ${flat}
 Tower: ${tower}
+Nakshatra: ${nakshatra}
+Gotra: ${gotra}
 Pooja Details: ${pooja}
 Please confirm your availability.`,
 
@@ -56,6 +58,14 @@ Please confirm your availability.`,
               <td style="padding: 10px;">${tower}</td>
             </tr>
             <tr>
+              <td style="padding: 10px; font-weight: bold; color: #555;">Nakshatra:</td>
+              <td style="padding: 10px;">${nakshatra}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px; font-weight: bold; color: #555;">Gotra:</td>
+              <td style="padding: 10px;">${gotra}</td>
+            </tr>
+            <tr>
               <td style="padding: 10px; font-weight: bold; color: #555;">Pooja Details:</td>
               <td style="padding: 10px;">${pooja}</td>
             </tr>
@@ -79,6 +89,5 @@ Please confirm your availability.`,
     return "Mail failed to send";
   }
 };
-
 
 module.exports = sendEmail;
