@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
   flat:{ type: String },
   nakshatra: { type: String }, 
   gotra: { type: String },
+  rasi: { type: String },
 });
 
 userSchema.pre("save", async function (next) {

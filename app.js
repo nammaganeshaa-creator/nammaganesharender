@@ -36,8 +36,6 @@ cron.schedule("*/1 * * * *", async () => {
 }});
 
 
-
-
 app.post("/register", async (req, res) => {
   const { name, email, phone, password } = req.body;
 
@@ -149,7 +147,6 @@ app.post("/posts", async (req, res) => {
   }
 });
 
-
 app.get("/posts/:userId", async (req, res) => {
   const { userId } = req.params;
 
@@ -169,7 +166,7 @@ app.get("/posts/:userId", async (req, res) => {
 });
 
 app.post("/request", async (req, res) => {
-  const { name, phone, flat, tower, date, poojaName, userId, nakshatra, gotra } = req.body;
+  const { name, phone, flat, tower, date, poojaName, userId, nakshatra, gotra, rasi } = req.body;
 
   try {
     // Validate required fields
@@ -181,8 +178,9 @@ app.post("/request", async (req, res) => {
     if (!poojaName) return res.status(400).json({ error: "Pooja name is required" });
     if (!nakshatra) return res.status(400).json({ error: "Nakshatra is required" });
     if (!gotra) return res.status(400).json({ error: "Gotra is required" });
+    if (!rasi) return res.status(400).json({ error: "Rasi is required" });  // Validate Rasi
 
-    // Create new request document
+    // Create new request document including Rasi
     const newRequest = new Request({
       name,
       phone,
@@ -191,8 +189,9 @@ app.post("/request", async (req, res) => {
       date,
       poojaName,
       userId,
-      nakshatra,   
-      gotra,       
+      nakshatra,
+      gotra,
+      rasi,  // Include Rasi
     });
 
     // Save the request
@@ -207,7 +206,6 @@ app.post("/request", async (req, res) => {
     res.status(500).send(`Server error: ${err}`);
   }
 });
-
 
 app.delete("/delete/:id", async (req, res) => {
   const { id } = req.params;
@@ -245,16 +243,16 @@ app.delete("/delete/:id", async (req, res) => {
 
 app.patch("/update-profile/:id", async (req, res) => {
   const { id } = req.params;
-  const { name, email, phone, tower, flat, nakshatra, gotra } = req.body;
+  const { name, email, phone, tower, flat, nakshatra, gotra, rasi } = req.body;  // Include 'rasi' in the destructuring
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ error: "Invalid user ID" });
   }
 
   // Ensure at least one field is provided for update
-  if (!name && !email && !phone && !tower && !flat && !nakshatra && !gotra) {
+  if (!name && !email && !phone && !tower && !flat && !nakshatra && !gotra && !rasi) {
     return res.status(400).json({
-      error: "At least one field (name, email, phone, tower, flat, nakshatra, gotra) is required to update",
+      error: "At least one field (name, email, phone, tower, flat, nakshatra, gotra, rasi) is required to update",
     });
   }
 
@@ -314,6 +312,12 @@ app.patch("/update-profile/:id", async (req, res) => {
       isChanged = true;
     }
 
+    // Rasi (Zodiac Sign)
+    if (rasi && rasi !== user.rasi) {
+      user.rasi = rasi;  // Update the rasi
+      isChanged = true;
+    }
+
     if (!isChanged) {
       return res.status(200).json({ message: "No changes detected." });
     }
@@ -321,13 +325,14 @@ app.patch("/update-profile/:id", async (req, res) => {
     const updatedUser = await user.save();
     const { password, ...safeUser } = updatedUser.toObject();
 
-    // Include nakshatra and gotra in the response as part of safeUser
+    // Include nakshatra, gotra, and rasi in the response as part of safeUser
     return res.status(200).json({
       message: "Profile updated successfully",
       user: {
         ...safeUser,  // Spread the other user fields
         nakshatra: updatedUser.nakshatra,  // Include Nakshatra
-        gotra: updatedUser.gotra           // Include Gotra
+        gotra: updatedUser.gotra,           // Include Gotra
+        rasi: updatedUser.rasi              // Include Rasi
       },
     });
   } catch (err) {
@@ -335,8 +340,6 @@ app.patch("/update-profile/:id", async (req, res) => {
     return res.status(500).json({ error: "Server error while updating profile" });
   }
 });
-
-
 
 app.get("/user-profile/:id", async (req, res) => {
   const { id } = req.params;
@@ -347,32 +350,29 @@ app.get("/user-profile/:id", async (req, res) => {
   }
 
   try {
-    // Fetch the user by ID and exclude the password field
+    // Fetch the user by ID
     const user = await User.findById(id);  // Don't use select here for better control
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Return the user profile with Nakshatra and Gotra
+    // Return the user profile with Nakshatra, Gotra, and Rasi
     res.status(200).json({
       name: user.name,
       email: user.email,
       phone: user.phone,
       tower: user.tower,
       flat: user.flat,
-      nakshatra: user.nakshatra,  // Include Nakshatra
-      gotra: user.gotra           // Include Gotra
+      nakshatra: user.nakshatra,  
+      gotra: user.gotra,          
+      rasi: user.rasi             
     });
   } catch (err) {
     console.error("Profile fetch error:", err);
     res.status(500).json({ error: "Server error while fetching user profile" });
   }
 });
-
-
-
-
 
 app.patch("/update-password/:id", async (req, res) => {
   const { id } = req.params;
@@ -406,7 +406,6 @@ app.patch("/update-password/:id", async (req, res) => {
     res.status(500).json({ error: "Server error while updating password" });
   }
 });
-
 
 
 const PORT = process.env.PORT;

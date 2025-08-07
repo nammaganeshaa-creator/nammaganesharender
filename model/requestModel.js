@@ -14,7 +14,8 @@ const RequestSchema = new mongoose.Schema(
       required: true,
     },
     nakshatra: { type: String }, 
-    gotra: { type: String },     
+    gotra: { type: String },    
+    rasi: { type: String }, 
   },
   { timestamps: true }
 );
