@@ -10,23 +10,22 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const sendEmail = async (name, phone, flat, tower, pooja, date, nakshatra,rasi, gotra) => {
+const sendEmail = async (name, phone, flat, tower, pooja, date, nakshatra, rasi, gotra) => {
   const mailOptions = {
     from: "nammaganeshaa@gmail.com",
     to: "nammaganeshaa@gmail.com",
     subject: "New Pooja Request",
     text: `Pooja Request Details:
-Devotee Name: ${name}
-Phone Number: ${phone}
-Date of Pooja: ${date}
-Flat Number: ${flat}
-Tower: ${tower}
-Nakshatra: ${nakshatra}
-Rasi: ${rasi}
-Gotra: ${gotra}
-Pooja Details: ${pooja}
-Please confirm your availability.`,
-
+      Devotee Name: ${name}
+      Phone Number: ${phone}
+      Date of Pooja: ${date}
+      Flat Number: ${flat}
+      Tower: ${tower}
+      Nakshatra: ${nakshatra}
+      Rasi: ${rasi}
+      Gotra: ${gotra}
+      Pooja Details: ${pooja}
+      Please confirm your availability.`,
     html: `
     <html>
       <body style="font-family: 'Segoe UI', sans-serif; background-color: #f6f8fa; color: #333; padding: 20px;">
@@ -63,7 +62,7 @@ Please confirm your availability.`,
               <td style="padding: 10px;">${nakshatra}</td>
             </tr>
             <tr>
-              <td style="padding: 10px; font-weight: bold; color: #555;">Nakshatra:</td>
+              <td style="padding: 10px; font-weight: bold; color: #555;">Rasi:</td>
               <td style="padding: 10px;">${rasi}</td>
             </tr>
             <tr>
