@@ -8,6 +8,9 @@ const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const sendEmail = require("./nodemailer");
 const cron = require("node-cron");
+const Otp = require("./model/OtpModel");
+const crypto= require("crypto");
+
 
 dotenv.config();
 
@@ -404,6 +407,90 @@ app.patch("/update-password/:id", async (req, res) => {
   } catch (err) {
     console.error("Password update error:", err);
     res.status(500).json({ error: "Server error while updating password" });
+  }
+});
+
+function generateOtp() {
+  const otp = crypto.randomBytes(2).readUInt16BE(0) % 10000; 
+  return otp.toString().padStart(4, "0");  
+}
+
+app.post("/forgot-password", async (req, res) => {
+  try {
+    let { email } = req.body;
+    email = email.trim().toLowerCase(); 
+    if (!email) {
+      return res.status(400).json({ ok: false, message: "Email is required" });
+    }
+     const existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      return res.status(400).json({ error: "User not found" });
+    }
+    const otp = generateOtp();
+
+    const exitingOtp=await Otp.findOne({email})
+    if(exitingOtp){
+      await Otp.findByIdAndUpdate(exitingOtp._id,{otp})
+    }else{
+       await Otp.create({ email, otp });
+    }
+
+    console.log("OTP saved:", otp);
+    await sendEmail.sendOtpEmail(email, otp);
+    return res.json({
+      ok: true,
+      message: "OTP has been sent to your email", 
+    });
+  } catch (err) {
+    console.error("Forgot password error:", err);
+    return res.status(500).json({ ok: false, message: "Failed to process request" });
+  }
+});
+
+// OTP Validation and Password Update endpoint
+async function hashPassword(password) {
+  const saltRounds = 10;
+  return bcrypt.hash(password, saltRounds);
+}
+
+// OTP Validation and Password Update
+app.patch("/otp-update-password", async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ ok: false, message: "All fields are required" });
+    }
+
+    // Fetch the latest OTP record for the given email
+    const otpRecord = await Otp.findOne({ email }); 
+    if (!otpRecord) {
+      return res.status(400).json({ ok: false, message: "Invalid OTP" });
+    }
+
+    const isExpired = (Date.now() - otpRecord.updatedAt.getTime()) > 5 * 60 * 1000;
+    if (isExpired) {
+      return res.status(400).json({ ok: false, message: "OTP has expired. Please request a new one." });
+    }
+    if(otpRecord.otp !== otp){
+      return res.status(400).json({ ok: false, message: "Invalid OTP" });
+    }
+
+    await otpRecord.deleteOne();
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ ok: false, message: "User not found" });
+    }
+
+    const hashedPassword = await hashPassword(newPassword);
+    user.password = hashedPassword; // Set the new hashed password
+    await user.save(); // Save the updated user
+
+    return res.json({ ok: true, message: "Password updated successfully" });
+  } catch (err) {
+    console.error("Error updating password:", err);
+    return res.status(500).json({ ok: false, message: "Failed to update password" });
   }
 });
 

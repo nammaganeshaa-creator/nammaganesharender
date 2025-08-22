@@ -5,15 +5,15 @@ dotenv.config();
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "nammaganeshaa@gmail.com",
-    pass: "sdgmlurfwlkjfzcz",
+    user: process.env.USER,
+    pass: process.env.PASSWORD,
   },
 });
 
 const sendEmail = async (name, phone, flat, tower, pooja, date, nakshatra, rasi, gotra) => {
   const mailOptions = {
-    from: "nammaganeshaa@gmail.com",
-    to: "nammaganeshaa@gmail.com",
+    from: process.env.FROM_MAIL,
+    to: process.env.TO_MAIL,
     subject: "New Pooja Request",
     text: `Pooja Request Details:
       Devotee Name: ${name}
@@ -94,4 +94,38 @@ const sendEmail = async (name, phone, flat, tower, pooja, date, nakshatra, rasi,
   }
 };
 
-module.exports = sendEmail;
+const sendOtpEmail = async (to, otp) => {
+  const mailOptions = {
+    from: process.env.FROM_MAIL,
+    to,
+    subject: "Password Reset OTP",
+    text: `Your verification code is: ${otp}\nThis code will expire in 5 minutes.\nIf you did not request a password reset, please ignore this email.`,
+    html: `
+    <html>
+      <body style="font-family: 'Segoe UI', sans-serif; background:#f6f8fa; color:#333; padding:20px;">
+        <div style="max-width: 600px; margin: auto; background: #ffffff; padding: 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+          <h2 style="text-align:center; color:#1e3a8a;">Password Reset Verification</h2>
+          <p>Use the following 4-digit code to reset your password. It will expire in <b>5 minutes</b>:</p>
+          <div style="font-size:28px; letter-spacing:10px; font-weight:bold; text-align:center; margin:20px 0; padding:12px; background:#f9fafb; border:1px dashed #cbd5e1; border-radius:6px;">
+            ${otp}
+          </div>
+          <p>If you didn't request this, you can safely ignore this email.</p>
+          <p style="margin-top:20px; font-size:14px; color:#6b7280;">— Namma Ganesha Team</p>
+        </div>
+      </body>
+    </html>
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("OTP Email sent:", info.response);
+    return "OTP mail sent successfully";
+  } catch (error) {
+    console.error("Error sending OTP email:", error);
+    return "OTP mail failed to send";
+  }
+};
+
+
+module.exports = {sendEmail,sendOtpEmail};
