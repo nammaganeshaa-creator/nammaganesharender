@@ -415,37 +415,75 @@ function generateOtp() {
   return otp.toString().padStart(4, "0");  
 }
 
+function generateSalt() {
+  return crypto.randomBytes(16).toString('hex'); // Generates a 16-byte salt and converts it to a hex string
+}
+
+// Function to hash OTP (optional, based on your previous code)
+function hashOtp(otp) {
+  return crypto.createHash('sha256').update(otp).digest('hex'); // Hash the OTP using SHA256
+}
+
 app.post("/forgot-password", async (req, res) => {
   try {
     let { email } = req.body;
-    email = email.trim().toLowerCase(); 
+
+    // Sanitize input
     if (!email) {
       return res.status(400).json({ ok: false, message: "Email is required" });
     }
-     const existingUser = await User.findOne({ email });
-    if (!existingUser) {
-      return res.status(400).json({ error: "User not found" });
-    }
-    const otp = generateOtp();
 
-    const exitingOtp=await Otp.findOne({email})
-    if(exitingOtp){
-      await Otp.findByIdAndUpdate(exitingOtp._id,{otp})
-    }else{
-       await Otp.create({ email, otp });
+    email = email.trim().toLowerCase();
+
+    // Check if user exists
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      return res.status(400).json({ ok: false, error: "User not found" });
+    }
+
+    // Generate and save OTP
+    const otp = generateOtp();
+    
+    // Set other fields
+    const expiresAt = Date.now() + 10 * 60 * 1000; // OTP expires in 10 minutes
+    const salt = generateSalt(); // Generates a random salt
+    const codeHash = hashOtp(otp); // Hash the OTP
+
+    const existingOtp = await Otp.findOne({ email });
+    if (existingOtp) {
+      await Otp.findByIdAndUpdate(existingOtp._id, {
+        otp,
+        expiresAt,
+        salt,
+        codeHash
+      });
+    } else {
+      await Otp.create({
+        email,
+        otp,
+        expiresAt,
+        salt,
+        codeHash
+      });
     }
 
     console.log("OTP saved:", otp);
+
+    // Send email
     await sendEmail.sendOtpEmail(email, otp);
-    return res.json({
+
+    return res.status(200).json({
       ok: true,
-      message: "OTP has been sent to your email", 
+      message: "OTP has been sent to your email",
     });
+
   } catch (err) {
     console.error("Forgot password error:", err);
     return res.status(500).json({ ok: false, message: "Failed to process request" });
   }
 });
+
+
 
 // OTP Validation and Password Update endpoint
 async function hashPassword(password) {
