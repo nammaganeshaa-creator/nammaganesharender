@@ -64,7 +64,6 @@ app.post("/register", async (req, res) => {
     if (existingPhone) {
       return res.status(400).json({ error: "Phone number already in use" });
     }
-
     const newUser = new User({ name, email, phone, password });
     const savedUser = await newUser.save();
 
@@ -87,8 +86,9 @@ app.post("/login", async (req, res) => {
     if (!user) {
       return res.status(400).json({ error: "User not found,Please Register" });
     }
-
+    console.log("User found:", user);
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) {
       return res.status(400).json({ error: "Invalid credentials" });
     }
@@ -483,15 +483,6 @@ app.post("/forgot-password", async (req, res) => {
   }
 });
 
-
-
-// OTP Validation and Password Update endpoint
-async function hashPassword(password) {
-  const saltRounds = 10;
-  return bcrypt.hash(password, saltRounds);
-}
-
-// OTP Validation and Password Update
 app.patch("/otp-update-password", async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
@@ -521,9 +512,8 @@ app.patch("/otp-update-password", async (req, res) => {
       return res.status(404).json({ ok: false, message: "User not found" });
     }
 
-    const hashedPassword = await hashPassword(newPassword);
-    user.password = hashedPassword; // Set the new hashed password
-    await user.save(); // Save the updated user
+    user.password = newPassword;
+    await user.save(); 
 
     return res.json({ ok: true, message: "Password updated successfully" });
   } catch (err) {
