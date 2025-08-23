@@ -201,7 +201,7 @@ app.post("/request", async (req, res) => {
     const savedRequest = await newRequest.save();
 
     // Optionally send an email
-    await sendEmail(name, phone, flat, tower, poojaName, date, nakshatra, rasi, gotra);
+    await sendEmail.sendEmail(name, phone, flat, tower, poojaName, date, nakshatra, rasi, gotra);
 
     // Return the saved request
     res.status(201).send(savedRequest);
