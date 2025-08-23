@@ -446,24 +446,17 @@ app.post("/forgot-password", async (req, res) => {
     
     // Set other fields
     const expiresAt = Date.now() + 10 * 60 * 1000; // OTP expires in 10 minutes
-    const salt = generateSalt(); // Generates a random salt
-    const codeHash = hashOtp(otp); // Hash the OTP
-
     const existingOtp = await Otp.findOne({ email });
     if (existingOtp) {
       await Otp.findByIdAndUpdate(existingOtp._id, {
         otp,
         expiresAt,
-        salt,
-        codeHash
       });
     } else {
       await Otp.create({
         email,
         otp,
         expiresAt,
-        salt,
-        codeHash
       });
     }
 
@@ -491,7 +484,6 @@ app.patch("/otp-update-password", async (req, res) => {
       return res.status(400).json({ ok: false, message: "All fields are required" });
     }
 
-    // Fetch the latest OTP record for the given email
     const otpRecord = await Otp.findOne({ email }); 
     if (!otpRecord) {
       return res.status(400).json({ ok: false, message: "Invalid OTP" });
