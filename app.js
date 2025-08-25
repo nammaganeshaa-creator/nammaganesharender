@@ -10,7 +10,7 @@ const sendEmail = require("./nodemailer");
 const cron = require("node-cron");
 const Otp = require("./model/OtpModel");
 const crypto= require("crypto");
-
+const cors = require("cors");
 
 dotenv.config();
 
@@ -18,6 +18,9 @@ connectDB();
 
 const app = express();
 app.use(express.json());
+app.use(cors({
+  allowOrigin:"*"
+}))
 
 app.get("/api/ping", (req, res) => {
   res.status(200).send("pong");
