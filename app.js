@@ -530,14 +530,26 @@ app.get("/users/japa-summary", async (req, res) => {
       name: user.name,
       totalJapaCount: japaMap[user._id.toString()] || 0,
     }));
+
+    // sort by total japa count
     result.sort((a, b) => b.totalJapaCount - a.totalJapaCount);
 
-    res.status(200).json(result);
+    // calculate overall total
+    const overallTotalJapaCount = result.reduce(
+      (sum, user) => sum + user.totalJapaCount,
+      0
+    );
+
+    res.status(200).json({
+      overallTotalJapaCount,
+      users: result,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 });
+
 
 app.post("/contact", async (req, res) => {
   
