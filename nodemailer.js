@@ -94,7 +94,7 @@ const sendEmail = async (name, phone, flat, tower, pooja, date, nakshatra, rasi,
   }
 };
 
-const sendContactEmail = async (name, phone, flat, tower, pooja, date, nakshatra, rasi) => {
+const sendContactEmail = async (name, phone, nakshatra, rasi,pooja, date) => {
   const mailOptions = {
     from: process.env.FROM_MAIL,
     to: process.env.TO_MAIL,
@@ -103,8 +103,6 @@ const sendContactEmail = async (name, phone, flat, tower, pooja, date, nakshatra
       Devotee Name: ${name}
       Phone Number: ${phone}
       Date of Pooja: ${date}
-      Flat Number: ${flat}
-      Tower: ${tower}
       Nakshatra: ${nakshatra}
       Rasi: ${rasi}
       Pooja Details: ${pooja}`,
@@ -131,20 +129,12 @@ const sendContactEmail = async (name, phone, flat, tower, pooja, date, nakshatra
           <td style="padding: 10px;">${phone}</td>
         </tr>
         <tr>
-          <td style="padding: 10px; font-weight: bold; color: #555;">Flat No.:</td>
-          <td style="padding: 10px;">${flat}</td>
-        </tr>
-        <tr>
-          <td style="padding: 10px; font-weight: bold; color: #555;">Tower:</td>
-          <td style="padding: 10px;">${tower}</td>
-        </tr>
-        <tr>
           <td style="padding: 10px; font-weight: bold; color: #555;">Nakshatra:</td>
-          <td style="padding: 10px;">${nakshatra}</td>
+          <td style="padding: 10px;">${rasi}</td>
         </tr>
         <tr>
           <td style="padding: 10px; font-weight: bold; color: #555;">Rasi:</td>
-          <td style="padding: 10px;">${rasi}</td>
+          <td style="padding: 10px;">${nakshatra}</td>
         </tr>
         <tr>
           <td style="padding: 10px; font-weight: bold; color: #555;">Message:</td>

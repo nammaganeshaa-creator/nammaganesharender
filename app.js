@@ -541,14 +541,11 @@ app.get("/users/japa-summary", async (req, res) => {
 
 app.post("/contact", async (req, res) => {
   
-  const { name, phone, tower, flat, rasi, nakshatra, poojaName, date } = req.body;
+  const { name, phone, rasi, nakshatra, poojaName, date } = req.body;
 
   try {
-    // Validate required fields
     if (!name) return res.status(400).json({ error: "Name is required" });
     if (!phone) return res.status(400).json({ error: "Phone is required" });
-    if (!tower) return res.status(400).json({ error: "Tower is required" });
-    if (!flat) return res.status(400).json({ error: "Flat is required" });
     if (!rasi) return res.status(400).json({ error: "Rasi is required" });
     if (!nakshatra) return res.status(400).json({ error: "Nakshatra is required" });
     if (!poojaName) return res.status(400).json({ error: "Pooja name is required" });
@@ -557,15 +554,12 @@ app.post("/contact", async (req, res) => {
     await sendEmail.sendContactEmail(
       name,
       phone,
-      tower,
-      flat,
       rasi,
       nakshatra,
       poojaName,
       date,
   );
 
-    // Response
     res.status(201).json({ message: "Contact request sent successfully" });
   } catch (err) {
     console.error("Error saving contact:", err);
