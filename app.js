@@ -418,15 +418,6 @@ function generateOtp() {
   return otp.toString().padStart(4, "0");  
 }
 
-function generateSalt() {
-  return crypto.randomBytes(16).toString('hex'); // Generates a 16-byte salt and converts it to a hex string
-}
-
-// Function to hash OTP (optional, based on your previous code)
-function hashOtp(otp) {
-  return crypto.createHash('sha256').update(otp).digest('hex'); // Hash the OTP using SHA256
-}
-
 app.post("/forgot-password", async (req, res) => {
   try {
     let { email } = req.body;
@@ -519,10 +510,8 @@ app.patch("/otp-update-password", async (req, res) => {
 
 app.get("/users/japa-summary", async (req, res) => {
   try {
-    // Fetch only _id and name from users
     const users = await User.find({}, { _id: 1, name: 1 });
 
-    // Aggregate total japaCount per user
     const postsSummary = await Post.aggregate([
       {
         $group: {
@@ -532,17 +521,16 @@ app.get("/users/japa-summary", async (req, res) => {
       },
     ]);
 
-    // Map userId -> japaCount
     const japaMap = {};
     postsSummary.forEach((p) => {
       japaMap[p._id.toString()] = p.totalJapaCount;
     });
 
-    // Prepare response with only name + totalJapaCount
-    const result = users.map((user) => ({
+    let result = users.map((user) => ({
       name: user.name,
       totalJapaCount: japaMap[user._id.toString()] || 0,
     }));
+    result.sort((a, b) => b.totalJapaCount - a.totalJapaCount);
 
     res.status(200).json(result);
   } catch (err) {
