@@ -94,6 +94,96 @@ const sendEmail = async (name, phone, flat, tower, pooja, date, nakshatra, rasi,
   }
 };
 
+const sendContactEmail = async (name, phone, flat, tower, pooja, date, nakshatra, rasi) => {
+  const mailOptions = {
+    from: process.env.FROM_MAIL,
+    to: process.env.TO_MAIL,
+    subject: "Contact Us - Namma Ganesha",
+    text: `Contact Details:
+      Devotee Name: ${name}
+      Phone Number: ${phone}
+      Date of Pooja: ${date}
+      Flat Number: ${flat}
+      Tower: ${tower}
+      Nakshatra: ${nakshatra}
+      Rasi: ${rasi}
+      Pooja Details: ${pooja}`,
+    html: `
+   <html>
+  <body style="font-family: 'Segoe UI', sans-serif; background-color: #f6f8fa; color: #333; padding: 20px;">
+    <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+      <h2 style="text-align: center; color: #d35400;">📩 New Contact Submission</h2>
+
+      <p style="font-size: 16px;"><strong>Dear Team,</strong></p>
+
+      <p style="font-size: 16px;">
+        A devotee has reached out through the contact form.  
+        Here are the details they provided:
+      </p>
+
+      <table style="width: 100%; font-size: 16px; border-collapse: collapse; margin-top: 20px;">
+        <tr>
+          <td style="padding: 10px; font-weight: bold; color: #555;">Name:</td>
+          <td style="padding: 10px;">${name}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; font-weight: bold; color: #555;">Phone:</td>
+          <td style="padding: 10px;">${phone}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; font-weight: bold; color: #555;">Flat No.:</td>
+          <td style="padding: 10px;">${flat}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; font-weight: bold; color: #555;">Tower:</td>
+          <td style="padding: 10px;">${tower}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; font-weight: bold; color: #555;">Nakshatra:</td>
+          <td style="padding: 10px;">${nakshatra}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; font-weight: bold; color: #555;">Rasi:</td>
+          <td style="padding: 10px;">${rasi}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; font-weight: bold; color: #555;">Message:</td>
+          <td style="padding: 10px;">${pooja}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; font-weight: bold; color: #555;">Preferred Date:</td>
+          <td style="padding: 10px;">${date}</td>
+        </tr>
+      </table>
+
+      <p style="margin-top: 30px; font-size: 16px;">
+        Kindly follow up with the devotee at your earliest convenience.  
+        Thank you.
+      </p>
+
+      <p style="font-size: 16px;">
+        Regards,<br/>
+        <strong>Namma Ganesha Team</strong>
+      </p>
+    </div>
+  </body>
+</html>
+
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent:", info.response);
+    return "Mail sent successfully";
+  } catch (error) {
+    console.error("Error sending email:", error);
+    return "Mail failed to send";
+  }
+};
+
+
+
 const sendOtpEmail = async (to, otp) => {
   const mailOptions = {
     from: process.env.FROM_MAIL,
@@ -128,4 +218,4 @@ const sendOtpEmail = async (to, otp) => {
 };
 
 
-module.exports = {sendEmail,sendOtpEmail};
+module.exports = {sendEmail,sendOtpEmail,sendContactEmail};
