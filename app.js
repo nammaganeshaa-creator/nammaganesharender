@@ -514,6 +514,43 @@ app.patch("/otp-update-password", async (req, res) => {
   }
 });
 
+app.get("/users/japa-summary", async (req, res) => {
+  try {
+    // Fetch only _id and name from users
+    const users = await User.find({}, { _id: 1, name: 1 });
+
+    // Aggregate total japaCount per user
+    const postsSummary = await Post.aggregate([
+      {
+        $group: {
+          _id: "$userId",
+          totalJapaCount: { $sum: "$japaCount" },
+        },
+      },
+    ]);
+
+    // Map userId -> japaCount
+    const japaMap = {};
+    postsSummary.forEach((p) => {
+      japaMap[p._id.toString()] = p.totalJapaCount;
+    });
+
+    // Prepare response with only name + totalJapaCount
+    const result = users.map((user) => ({
+      name: user.name,
+      totalJapaCount: japaMap[user._id.toString()] || 0,
+    }));
+
+    res.status(200).json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+
+
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
