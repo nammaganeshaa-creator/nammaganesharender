@@ -27,7 +27,7 @@ app.get("/api/ping", (req, res) => {
 });
 
 cron.schedule("*/1 * * * *", async () => {
-      const url = "https://japa-meev.onrender.com/api/ping"; 
+      const url = "https://nammaganesharender.onrender.com/api/ping"; 
       console.log(`[CRON] Self-ping at ${new Date().toLocaleTimeString()}`);
     //comment
       try {
